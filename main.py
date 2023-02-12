@@ -3,7 +3,7 @@ import urllib
 import xlsxwriter
 from flask import Flask, render_template, request, flash, send_file, redirect, url_for, session
 import pandas as pd
-from flask_pymongo import PyMongo
+from flask_pymongo import PyMongo, pymongo
 from werkzeug.datastructures import MultiDict
 from responses import upsert
 from datetime import datetime, date
@@ -21,17 +21,16 @@ from pymongo import MongoClient
 import datetime
 # from webui import WebUI
 from flaskwebgui import FlaskUI
-# from PyQt5.QtCore import *
-# from PyQt5.QtWebEngineWidgets import *
-# from PyQt5.QtWidgets import QApplication
-# from threading import Timer
-# import sys
+
 from webui import WebUI
 
 
 app = Flask(__name__)
-ui = WebUI(app, debug=True)
-ui = FlaskUI(app)
+app.config["SECRET_KEY"] = "013a658d9c8323f8e0af1f8ba8b4bcf30456a4c0"
+app.config["MONGO_URI"] = "mongodb+srv://sagar:sagar@cluster0.gwnjuq6.mongodb.net/?retryWrites=true&w=majority"
+
+# ui = WebUI(app, debug=True)
+# ui = FlaskUI(app)
 
 employee_names = []
 # production_items = []
@@ -39,11 +38,18 @@ employee_names = []
 current_month = datetime.datetime.now().strftime("%B")
 current_year = datetime.datetime.now().year
 
-app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
-mongo = PyMongo(app)
-app.secret_key = 'your_secret_key'
+mongo_client = pymongo.MongoClient("mongodb+srv://sagar:sagar@cluster0.gwnjuq6.mongodb.net/?retryWrites=true&w=majority", maxPoolSize=50, connect=False)
+db = pymongo.database.Database(mongo_client, 'ME')
+users = pymongo.collection.Collection(db, 'users')
 
-users = mongo.db.users
+# app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
+# mongo_client = PyMongo(app)
+# app.secret_key = 'your_secret_key'
+# db = mongo_client.ME
+# db = mongo_client.get_database('ME')
+
+# user_collection = PyMongo.collection.Collection(db, 'users')
+# users = mongo_client.db.users
 
 
 
@@ -69,7 +75,7 @@ def insert_raw():
     # print(rate)
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    raw = mongo.db.raw_material
+    raw = mongo_client.db.raw_material
     element = {
         "name": request.form.get("raw_name"),
         "units": request.form.get("units"),
@@ -97,7 +103,7 @@ def insert_raw():
 @app.route("/update_raw", methods=['POST'])
 def update():
     list_names = []
-    raw = mongo.db.raw_material
+    raw = mongo_client.db.raw_material
     documents = raw.find({})
     for i in documents:
         list_names.append(i["name"])
@@ -110,7 +116,7 @@ def update():
 def update_raw():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    raw = mongo.db.raw_material
+    raw = mongo_client.db.raw_material
     u_name = request.form.get("item")
     u_received = request.form.get("received")
     u_rate = request.form.get("rate")
@@ -131,9 +137,9 @@ def view():
     # list_issued = [0, 0, 0, 0, 761.83, 0, 0, 0]
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    raw = mongo.db.raw_material
-    items = mongo.db.prodItems
-    production = mongo.db.production
+    raw = mongo_client.db.raw_material
+    items = mongo_client.db.prodItems
+    production = mongo_client.db.production
 
     groups = {}
     documents = items.find({})
@@ -240,7 +246,7 @@ def prod():
 # Displaying page of insertion of production item
 @app.route("/insertItem", methods=['POST', 'GET'])
 def insertItem():
-    raw = mongo.db.raw_material
+    raw = mongo_client.db.raw_material
     raw_materials = []
     for i in raw.find({}, {"name": 1, "_id": 0}):
         if i['name']:
@@ -254,7 +260,7 @@ def insertItem():
 def newProd():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    prodItems = mongo.db.prodItems
+    prodItems = mongo_client.db.prodItems
     name = request.form.get("name")
     weight = request.form.get("weight")
     raw = request.form.get("raw")
@@ -281,7 +287,7 @@ def newProd():
 def updateProd():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    prodItems = mongo.db.prodItems
+    prodItems = mongo_client.db.prodItems
     production_items = list(prodItems.find({}, {"_id": 0, "Name": 1}))
     list_prod_items = []
     for i in range(len(production_items)):
@@ -306,8 +312,8 @@ def uProduction():
     print(day, month)
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    production = mongo.db.production
-    items = mongo.db.prodItems
+    production = mongo_client.db.production
+    items = mongo_client.db.prodItems
 
     cursor = production.find_one({"Name": item})
     if cursor:
@@ -381,9 +387,9 @@ def viewProduction():
     print("Production report")
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    raw_material = mongo.db.raw_material
-    items = mongo.db.prodItems
-    production = mongo.db.production
+    raw_material = mongo_client.db.raw_material
+    items = mongo_client.db.prodItems
+    production = mongo_client.db.production
 
     documents = raw_material.find({}, {"name": 1})
     raw_materials = []
@@ -457,7 +463,7 @@ def viewProduction():
         kgs.append(quantity['Kgs'])
     print(kgs)
 
-    items = mongo.db.prodItems
+    items = mongo_client.db.prodItems
     weights = []
     for item in list_items:
         item_weight = items.find_one({"Name": item})
@@ -539,7 +545,7 @@ def addE():
 def add_employee():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    employees = mongo.db.employees
+    employees = mongo_client.db.employees
 
     name = request.form.get("eName")
     age = request.form.get("eAge")
@@ -562,7 +568,7 @@ def add_employee():
 def markEmployee():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    employees = mongo.db.employees
+    employees = mongo_client.db.employees
     names = list(employees.find({}, {"Name": 1, "_id": 0}))
     list_names = []
     for i in range(len(names)):
@@ -577,7 +583,7 @@ def attendance():
     date = request.form.get("date")
     hours = request.form.getlist("hours")
     # print(date, hours)
-    employees = mongo.db.employees
+    employees = mongo_client.db.employees
     names = list(employees.find({}, {"Name": 1, "_id": 0}))
     list_names = []
     for i in range(len(names)):
@@ -587,7 +593,7 @@ def attendance():
     month = int(date[5] + date[6])
     print("Day", day, "Month", month)
     odd = [1, 3, 5, 7, 8, 10, 12]
-    attend = mongo.db.attendance
+    attend = mongo_client.db.attendance
     for i in range(len(list_names)):
         a_doc = attend.find_one({"Name": list_names[i]})
         # print("A_doc", a_doc)
@@ -634,7 +640,7 @@ def removeE():
 @app.route("/remove", methods=['POST'])
 def remove():
     name = request.form.get("name")
-    employees = mongo.db.employees
+    employees = mongo_client.db.employees
     employees.delete_one({"Name": name})
     return render_template("Employees/employees.html")
 
@@ -642,8 +648,8 @@ def remove():
 # Displaying attendance report
 @app.route("/viewAttendance", methods=['POST'])
 def viewAttendance():
-    attendance = mongo.db.attendance
-    employees = mongo.db.employees
+    attendance = mongo_client.db.attendance
+    employees = mongo_client.db.employees
     names = list(attendance.find({}, {"Name": 1, "_id": 0}))
     # print(names)
     employee_names = []
@@ -699,7 +705,7 @@ def dispatchProduction():
 
 @app.route("/dispatchInsert", methods=["GET"])
 def dispatchInsert():
-    production = mongo.db.production
+    production = mongo_client.db.production
     names = list(production.find({}, {"Name": 1, "_id": 0}))
     list_names = []
     for i in names:
@@ -716,8 +722,8 @@ def updateDispatch():
     name = request.form.get("item")
     date = request.form.get("date")
     quantity = request.form.get("quantity")
-    items = mongo.db.prodItems
-    dispatch = mongo.db.dispatch
+    items = mongo_client.db.prodItems
+    dispatch = mongo_client.db.dispatch
     # print(name, date)
     day = int(date[8] + date[9])
     month = int(date[5] + date[6])
@@ -766,7 +772,7 @@ def updateDispatch():
 
 @app.route("/updateSchedule", methods=['GET'])
 def schedule():
-    production = mongo.db.production
+    production = mongo_client.db.production
     names = list(production.find({}, {"Name": 1, "_id": 0}))
     list_names = []
     for i in names:
@@ -779,7 +785,7 @@ def schedule():
 def insertSchedule():
     name = request.form.get("item")
     quantity = request.form.get("schedule")
-    schedule = mongo.db.schedule
+    schedule = mongo_client.db.schedule
     document = {
         "Name": name,
         "Schedule": quantity
@@ -790,7 +796,7 @@ def insertSchedule():
 
 @app.route("/viewScheduleReport", methods=['post'])
 def view_report():
-    items = mongo.db.prodItems
+    items = mongo_client.db.prodItems
 
     # Column of names
     names = list(items.find({}, {"Name": 1, "_id": 0}))
@@ -800,7 +806,7 @@ def view_report():
     # print(list_names)
 
     # Column of scheduled quantities
-    schedule = mongo.db.schedule
+    schedule = mongo_client.db.schedule
     list_schedule = []
     for i in list_names:
         doc = schedule.find_one({"Name": i})
@@ -811,7 +817,7 @@ def view_report():
     # print(list_schedule)
 
     # Columns of days
-    dispatch = mongo.db.dispatch
+    dispatch = mongo_client.db.dispatch
     data1 = pd.DataFrame(list_names, columns=['Item Name'])
     data2 = pd.DataFrame()
     for i in list_names:
@@ -901,7 +907,7 @@ def aCreditor():
         "90 Onwards": 0,
         "Production": doc
     }
-    creditors = mongo.db.creditors
+    creditors = mongo_client.db.creditors
     creditors.insert_one(document)
     return render_template("Creditors/creditors.html")
 
@@ -910,7 +916,7 @@ def aCreditor():
 @app.route("/addDue", methods=['POST'])
 def addDue():
     list_names = []
-    creditors = mongo.db.creditors
+    creditors = mongo_client.db.creditors
     names = creditors.find({}, {"Name": 1, "_id": 0})
     for i in names:
         list_names.append(i["Name"])
@@ -924,7 +930,7 @@ def aDue():
     name = request.form.get("name")
     amount = request.form.get("amount")
     date = request.form.get("date")
-    creditors = mongo.db.creditors
+    creditors = mongo_client.db.creditors
     document = creditors.find_one({"Name": name})
     print(document)
     doc = document['Production']
@@ -969,7 +975,7 @@ def aDue():
 @app.route("/releaseDue", methods=['POST'])
 def releaseDue():
     list_names = []
-    creditors = mongo.db.creditors
+    creditors = mongo_client.db.creditors
     names = creditors.find({}, {"Name": 1, "_id": 0})
     for i in names:
         list_names.append(i["Name"])
@@ -981,7 +987,7 @@ def releaseDue():
 def rDue():
     name = request.form.get("name")
     amount = request.form.get("amount")
-    creditors = mongo.db.creditors
+    creditors = mongo_client.db.creditors
     document = creditors.find_one({"Name": name})
     print(document)
     if document["90 Onwards"] > 0:
@@ -1026,7 +1032,7 @@ def rDue():
 # Displaying page for creditors report
 @app.route("/viewCreditors", methods=['POST'])
 def viewCreditors():
-    creditors = mongo.db.creditors
+    creditors = mongo_client.db.creditors
 
     list_names = []
     names = creditors.find({}, {"Name": 1, "_id": 0})
@@ -1104,7 +1110,7 @@ def aDebitor():
         "90 Onwards": 0,
         "Dates": doc
     }
-    debitors = mongo.db.debitors
+    debitors = mongo_client.db.debitors
     debitors.insert_one(document)
     return render_template("Debitors/debitors.html")
 
@@ -1112,7 +1118,7 @@ def aDebitor():
 # Displaying page for adding outstanding
 @app.route("/addOutstanding", methods=['POST'])
 def addOutstanding():
-    debitors = mongo.db.debitors
+    debitors = mongo_client.db.debitors
     list_names = []
     names = debitors.find({}, {"Name": 1, "_id": 0})
     for i in names:
@@ -1123,7 +1129,7 @@ def addOutstanding():
 # Adding outstanding amount
 @app.route("/aOutstanding", methods=['POST'])
 def aOutstanding():
-    debitors = mongo.db.debitors
+    debitors = mongo_client.db.debitors
     name = request.form.get("name")
     date = request.form.get("date")
     amount = request.form.get("amount")
@@ -1169,7 +1175,7 @@ def aOutstanding():
 # Displaying page for releasing outstanding
 @app.route("/releaseOutstanding", methods=['POST'])
 def releaseOutstanding():
-    debitors = mongo.db.debitors
+    debitors = mongo_client.db.debitors
     list_names = []
     names = debitors.find({}, {"Name": 1, "_id": 0})
     for i in names:
@@ -1183,7 +1189,7 @@ def releaseOutstanding():
 def rOutstanding():
     name = request.form.get("name")
     amount = request.form.get("amount")
-    debitors = mongo.db.debitors
+    debitors = mongo_client.db.debitors
     document = debitors.find_one({"Name": name})
     print(document)
 
@@ -1229,7 +1235,7 @@ def rOutstanding():
 # Displaying page for viewing debitors page
 @app.route("/viewDebitors", methods=['POST'])
 def viewDebitors():
-    debitors = mongo.db.debitors
+    debitors = mongo_client.db.debitors
     list_names = []
     names = debitors.find({}, {"Name": 1, "_id": 0})
     for i in names:
@@ -1283,7 +1289,7 @@ def finish():
 
 @app.route("/addOpening", methods=['POST'])
 def addOpening():
-    items = mongo.db.prodItems
+    items = mongo_client.db.prodItems
     list_names = []
     for i in items.find({}, {"Name": 1, "_id": 0}):
         list_names.append(i['Name'])
@@ -1295,7 +1301,7 @@ def addOpening():
 def addO():
     item = request.form.get("item")
     quantity = request.form.get("quantity")
-    opening = mongo.db.opening
+    opening = mongo_client.db.opening
     document = {
         "Name": item,
         "Opening": quantity
@@ -1306,10 +1312,10 @@ def addO():
 
 @app.route("/viewFinish", methods=['POST'])
 def viewFinish():
-    items = mongo.db.prodItems
-    production = mongo.db.production
-    dispatch = mongo.db.dispatch
-    opening = mongo.db.opening
+    items = mongo_client.db.prodItems
+    production = mongo_client.db.production
+    dispatch = mongo_client.db.dispatch
+    opening = mongo_client.db.opening
 
     list_names = []
     for i in items.find({}, {"Name": 1, "_id": 0}):
@@ -1402,7 +1408,7 @@ def analysis():
 
 @app.route("/production_graph")
 def production_graph():
-    production = mongo.db.production
+    production = mongo_client.db.production
     documents = list(production.find())
 
     names = [doc['Name'] for doc in documents]
@@ -1424,8 +1430,8 @@ def production_graph():
 
 @app.route("/dispatch_graph")
 def dispatch_graph():
-    dispatch = mongo.db.dispatch
-    items = mongo.db.prodItems
+    dispatch = mongo_client.db.dispatch
+    items = mongo_client.db.prodItems
 
     list_names = []
     documents = items.find({}, {"Name": 1, "_id": 0})
@@ -1457,8 +1463,8 @@ def dispatch_graph():
 
 @app.route("/cnc_report", methods=['GET'])
 def cnc_report():
-    items = mongo.db.prodItems
-    production = mongo.db.production
+    items = mongo_client.db.prodItems
+    production = mongo_client.db.production
 
     list_names = []
     list_open = []
@@ -1526,7 +1532,7 @@ def login():
 @app.route("/login", methods=['POST', 'GET'])
 def login_next():
     if request.method == 'POST':
-        users = mongo.db.users
+        users = mongo_client.db.users
         login_user = users.find_one({"Username": request.form["username"]})
         print("User exists")
         if login_user:
@@ -1543,7 +1549,7 @@ def login_next():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        users = mongo.db.users
+        users = mongo_client.db.users
         existing_user = users.find_one({"Username": request.form["username"]})
 
         if existing_user is None:
@@ -1587,8 +1593,8 @@ def logout():
 
 if __name__ == '__main__':
     # Timer(1, lambda: ui("http://127.0.0.1:5000/")).start()
-    # app.run()
-    ui.run()
+    app.run()
+    # ui.run()
 
 
 # 2023-01-03
