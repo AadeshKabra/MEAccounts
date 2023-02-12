@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert raw material</title>
+    <link rel="stylesheet" href="static\insertRaw.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+</head>
+
+<body class="full-background">
+    <h1>Insert raw material</h1>
+    <form method="post" action="/insert_raw_material" onsubmit="localhost:5000/raw_material">
+        <div class="row">
+            <label for="raw_name">Material Name: </label>
+            <input type="text" id="raw_name" name="raw_name">
+
+            <label for="units">Units: </label>
+            <input type="text" id="units" name="units">
+
+            <label for="opening">Opening Balance: </label>
+            <input type="number" id="opening" name="opening" step="0.01">
+        </div>
+
+        <div class="row">
+            <label for="received">Received: </label>
+            <input type="number" id="received" name="received" step="0.01">
+
+            <label for="rate">Rate: </label>
+            <input type="number" step="0.01" id="rate" name="rate">
+        </div>
+
+        <div class="row">
+            <button type="submit" class="button-40" role="button">Insert</button>
+        </div>
+        
+    </form>
+
+    <form action="/raw_material" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+
+</html>

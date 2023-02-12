@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creditors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/update.css">
+</head>
+<body class="full-background">
+    <h1>Add Creditor</h1>
+    <form action="/aCreditor" method="post">
+        <label for="name">Name of Creditor</label>
+        <input type="text" id="name" name="name">
+
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date">
+
+        <label for="amount">Amount due</label>
+        <input type="number" id="amount" name="amount" step="0.01">
+
+        <button type="submit" class="button-40" role="button">Add Creditor</button>
+    </form>
+    <form action="/creditors" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

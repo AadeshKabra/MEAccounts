@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/rawMaterial.css">
+</head>
+<body class="full-background">
+    <h1>Employee</h1>
+    <form action="/addE" method="post">
+        <button type="submit" class="button-40" role="button">Add employee</button>
+    </form>
+
+    <form action="/markE" method="post">
+        <button type="submit" class="button-40" role="button">Mark Attendance</button>
+    </form>
+
+    <form action="/removeE" method="post">
+        <button type="submit" class="button-40" role="button">Remove Employee</button>
+    </form>
+
+    <form action="/viewAttendance" method="post">
+        <button type="submit" class="button-40" role="button">View Attendance report</button>
+    </form>
+
+    <form action="/index" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

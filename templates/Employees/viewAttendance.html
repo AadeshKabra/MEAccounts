@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee</title>
+</head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/view.css">
+<style>
+    .data{
+        margin-left: 2em;
+        margin-right: 2em;
+    }
+</style>
+<body class="full-background">
+    <form action="/attendanceT" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+    <h1>Attendance Report</h1>
+    <div class="data">
+        {{ table|safe }}
+    </div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/updateProd.css">
+    <title>Finish</title>
+</head>
+
+<body class="full-background">
+    <h1>Add Opening Balance</h1>
+
+    <form action="/addO" method="post">
+        <label for="item">Production Item</label>
+        <select id="item" name="item" style="display: block; font-size: 20px; margin-top: 1em; margin-bottom: 1em; width: 100%;">
+            <option value="Select" style="font-size: 20px;">Select an item</option>
+            {% for item in items %}
+            <option value="{{ item }}" style="font-size: 20px;">{{ item }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="quantity">Amount</label>
+        <input type="number" name="quantity" id="quantity">
+
+        <button type="submit" class="button-40" role="button">Add</button>
+    </form>
+    <form action="/finish" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+
+</html>

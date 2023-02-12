@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raw material</title>
+    <link rel="stylesheet" href="static\rawMaterial.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+</head>
+<body class="full-background">
+    <h1>Raw material Section</h1>
+    
+    <form method="post" action="/insert_raw">
+        <button type="submit" class="button-40" role="button">Insert new material</button>
+    </form>
+
+    <form method="post" action="/update_raw">
+        <button type="submit" class="button-40" role="button">Update received material</button>
+    </form>
+
+    <form method="get" action="/open_raw">
+        <button type="submit" class="button-40" role="button">View report</button>
+    </form>
+
+    <form action="/index" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+
+    {% if insertMessage %}
+        <script>
+            function insertMessage(){
+                alert("Raw Material already exists. Please try updating it!")
+            }
+            insertMessage();
+        </script>
+    {% endif %}
+    <!-- <script>
+        function insertMessage(){
+            alert("Raw Material already exists. Please try updating it!")
+        }
+    </script> -->
+</body>
+</html>

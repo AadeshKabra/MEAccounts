@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App</title>
+    <link rel="stylesheet" href="static\index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+</head>
+
+<body class="full-background">
+    <h1>Mangala Enterprises Application</h1>
+    <div class="row">
+        <form method="get" action="/raw_material">
+            <button type="submit" class="button-40" role="button">Raw material</button>
+        </form>
+    
+        <form method="post" action="/production">
+            <button type="submit" class="button-40" role="button">Production</button>
+        </form>
+    
+        <form method="get" action="/dispatch">
+            <button type="submit" class="button-40" role="button">Dispatch</button>
+        </form>
+
+        <form method="get" action="/finish">
+            <button type="submit" class="button-40" role="button">Finish</button>
+        </form>
+    </div>
+    
+    <div class="row">
+        <form method="get" action="/creditors">
+            <button type="submit" class="button-40" role="button">Creditors</button>
+        </form>
+    
+        <form method="get" action="/debitors">
+            <button type="submit" class="button-40" role="button">Debitors</button>
+        </form>
+    
+        <form method="get" action="/analysis">
+            <button type="submit" class="button-40" role="button">Analysis</button>
+        </form>
+
+        <form method="get" action="/cnc_report">
+            <button type="submit" class="button-40" role="button">CNC Report</button>
+        </form>
+    </div>
+
+    <div class="row">
+        <form method="post" action="/attendanceT">
+            <button type="submit" class="button-40" role="button">Attendance for Traub</button>
+        </form>
+
+        <form method="post" action="/logout">
+            <button type="submit" class="button-40" role="button">Logout</button>
+        </form>
+    </div>
+    
+
+    <script>
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+    </script>
+</body>
+
+</html>

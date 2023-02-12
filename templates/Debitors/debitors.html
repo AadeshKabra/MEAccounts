@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debitors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/rawMaterial.css">
+</head>
+<body class="full-background">
+    <h1>Debitors</h1>
+
+    <form action="/addDebitor" method="post">
+        <button type="submit" class="button-40" role="button">Add Debitor</button>
+    </form>
+
+    <form action="/addOutstanding" method="post">
+        <button type="submit" class="button-40" role="button">Add Outstanding</button>
+    </form>
+
+    <form action="/releaseOutstanding" method="post">
+        <button type="submit" class="button-40" role="button">Release Outstanding</button>
+    </form>
+
+    <form action="/viewDebitors" method="post">
+        <button type="submit" class="button-40" role="button">View Debitors Report</button>
+    </form>
+
+    <form action="/index" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,88 @@
+.full-background {
+    /* Center the content */
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    /* Take full size */
+    height: 100vh;
+    width: 100vh;
+
+    /* Background */
+    background-image: url("pexels-ovan-62693.jpg");
+    background-size: cover;
+    background-position: center;
+    height: 100%;
+    width: 100%;
+}
+
+/* body{
+    overflow: hidden;
+} */
+
+/* CSS */
+.button-40 {
+    background-color: #222c42;
+    border: 1px solid transparent;
+    border-radius: .75rem;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    flex: 0 0 auto;
+    font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5rem;
+    padding: .75rem 1.2rem;
+    text-align: center;
+    text-decoration: none #6B7280 solid;
+    text-decoration-thickness: auto;
+    transition-duration: .2s;
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(.4, 0, 0.2, 1);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    width: 10em;
+}
+
+.button-40:hover {
+    background-color: #536073;
+    box-shadow: 3px 3px 5px 6px rgb(22, 22, 22);
+}
+
+.button-40:focus {
+    box-shadow: none;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+button{
+    margin-top: 1.5em;
+    width: fit-content;
+    display: inline-block;
+}
+
+@media (min-width: 768px) {
+    .button-40 {
+        padding: .75rem 1.5rem;
+    }
+}
+
+h1{
+    font-family: 'Bakbak One', cursive;
+    /* color: #222c42; */
+    /* color: red; */
+    color: #30475E;
+}
+
+.row{
+    margin-left: -1em;
+    margin-top: 3em;
+}
+
+form{
+    display: inline-block;
+    margin-left: 2em;
+}

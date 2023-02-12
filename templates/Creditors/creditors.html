@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creditors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/rawMaterial.css">
+</head>
+<body class="full-background">
+    <h1>SUPPLIERS  OUTSTANDING LIST ( CREDITORS LIST )</h1>
+
+    <form action="/addCreditor" method="post">
+        <button type="submit" class="button-40" role="button">Add Creditor</button>
+    </form>
+
+    <form action="/addDue" method="post">
+        <button type="submit" class="button-40" role="button">Add to Due</button>
+    </form>
+
+    <form action="/releaseDue" method="post">
+        <button type="submit" class="button-40" role="button">Release Payment</button>
+    </form>
+
+    <form action="/viewCreditors" method="post">
+        <button type="submit" class="button-40" role="button">View Creditors Report</button>
+    </form>
+
+    <form action="/index" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

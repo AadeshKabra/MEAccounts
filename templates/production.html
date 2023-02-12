@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/rawMaterial.css">
+    <!-- <link rel="stylesheet" href="static/production.css"> -->
+</head>
+<body class="full-background">
+    <h1>Production</h1>
+    <form method="post" action="/insertItem">
+        <button type="submit" class="button-40" role="button">Insert Item</button>
+    </form>
+
+    <form method="post" action="/updateProd">
+        <button type="submit" class="button-40" role="button">Update Production</button>
+    </form>
+
+    <form method="post" action="/viewProd">
+        <button type="submit" class="button-40" role="button">View Production</button>
+    </form>
+
+    <form action="/index" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+    <!-- <button onclick="location.href='/insertItem'" class="button-40" role="button">Insert Item</button>
+    <button onclick="location.href='/updateProd'" class="buttom-40" role="button">Update Production</button>
+    <button onclick="location.href='/viewProd'" class="buttom-40" role="button">View Production</button> -->
+
+    <!-- <form method="post" action="/updateProd">
+        <button type="submit">Update Production</button>
+    </form> -->
+</body>
+</html>

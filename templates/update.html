@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Raw Material</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/update.css">
+</head>
+<body class="full-background">
+    <h1>Update Received raw material</h1>
+    <form method="post" action="/update_raw_material">
+        <label for="item">Name</label>
+        <select id="item" name="item" style="display: block; font-size: 20px; margin-top: 1em; margin-bottom: 1em; width: 100%;">
+            <option value="Select" style="font-size: 20px;">Select an item</option>
+            {% for item in raw_materials %}
+            <option value="{{ item }}" style="font-size: 20px;">{{ item }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- <label for="name">Name: </label> -->
+        <!-- <input name="name" id="name" type="name"> -->
+
+        <label for="received">Received: </label>
+        <input name="received" id="received" type="number">
+
+        <label for="rate">Rate: </label>
+        <input name="rate" id="rate" type="number" step="0.01">
+
+        <button type="submit" class="button-40" role="button">Update</button>
+    </form>
+
+    <form action="/raw_material" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creditors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/update.css">
+</head>
+<body class="full-background">
+    <h1>Release Due Payment</h1>
+    <form action="/rDue" method="post">
+        <label for="name">Creditor: </label>
+        <select id="name" name="name" style="display: block; font-size: 20px; margin-top: 1em; margin-bottom: 1em; width: 100%;">
+            <option value="Select" style="font-size: 20px;">Choose a creditor</option>
+            {% for creditor in creditors %}
+            <option value="{{ creditor }}" style="font-size: 20px;">{{ creditor }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="amount">Amount: </label>
+        <input type="number" name="amount" id="amount" step="0.01">
+        
+        <button type="submit" class="button-40" role="button">Release</button>
+    </form>
+    <form action="/creditors" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

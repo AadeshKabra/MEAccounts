@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/view.css">
+</head>
+<body class="full-background">
+    <form action="/production" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+    <h1>Production report</h1>
+    <div class="data">
+        {{ report1|safe }}
+    </div>
+    <div class="data" id="small">
+        {{ report2|safe }}
+    </div>
+</body>
+</html>

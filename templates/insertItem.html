@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/update.css">
+</head>
+<body class="full-background">
+    <h1>Insert new production item</h1>
+    <form action="/newProd" method="post">
+        <label for="name">Item name:</label>
+        <input type="text" name="name" id="name">
+
+        <label for="weight">Weight of item: </label>
+        <input type="number" name="weight" id="weight" step="0.01">
+
+        <label for="raw">Raw Material used: </label>
+        <select id="raw" name="raw" style="display: block; font-size: 20px; margin-top: 1em; margin-bottom: 1em; width: 100%;">
+            <option value="Select" style="font-size: 20px;">Select an item</option>
+            {% for item in raw_materials %}
+            <option value="{{ item }}" style="font-size: 20px;">{{ item }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="rate" style="margin-top: 2em;">PO rate:</label>
+        <input type="number" name="rate" id="rate" step="0.01">
+
+        <button type="submit" class="button-40" role="button">Insert</button>
+    </form>
+    <form action="/production" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+</body>
+</html>

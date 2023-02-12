@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/employees.css">
+</head>
+<body class="full-background">
+    <h1>Mark Attendance</h1>
+    <form action="/attendance" method="post">
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date">
+
+        {% for employee in employees %}
+            <li>
+                <label for="name" style="display: inline-block;">{{employee}} - </label>
+                <!-- <input type="radio" id="present" value="Present" name="present">
+                <label for="present">Present</label>
+                <input type="radio" id="absent" value="Absent" name="absent">
+                <label for="absent">Absent</label> -->
+                <label for="hours" style="display: inline-block;">No. of hours: </label>
+                <input type="number" id="hours" name="hours" style="display: inline-block;"> 
+            </li>
+        {%endfor%}
+
+        <button type="submit" class="button-40" role="button">Submit Attendance</button>
+    </form>
+
+    <form action="/attendanceT" method="get">
+        <button type="submit" class="button-40" role="button" id="back">Back</button>
+    </form>
+    
+</body>
+</html>
