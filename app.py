@@ -1,7 +1,7 @@
 import urllib
 
 import xlsxwriter
-from flask import Flask, render_template, request, flash, send_file, redirect, url_for, session
+from flask import Flask, render_template, request, flash, send_file, redirect, url_for, session, send_from_directory
 import pandas as pd
 from flask_pymongo import PyMongo, pymongo
 from werkzeug.datastructures import MultiDict
@@ -221,7 +221,7 @@ def view():
     data_total.style.set_properties(subset=['Description'], **{'font-weight': 'bold'})
     # data_total.style.set_properties(**{'background-color': 'white', 'color': 'blue', 'border-color': 'black'})
 
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -511,8 +511,7 @@ def viewProduction():
     data3 = pd.DataFrame(list(zip(raw, quantity_data)), columns=['Raw Material', 'Quantity of material used'])
     table2 = data3.to_html()
 
-
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -682,7 +681,7 @@ def viewAttendance():
     data['Days'] = data['Total']/8
     data["Net Amount"] = data["Days"] * data["Rate"]
 
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -862,7 +861,7 @@ def view_report():
     # Total Sale column
     data['Total Sale'] = data['PO Rate'] * data['Despatched']
 
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -1065,7 +1064,7 @@ def viewCreditors():
 
     data['Total'] = data.sum(axis=1)
 
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -1266,7 +1265,7 @@ def viewDebitors():
 
     data['Total'] = data.sum(axis=1)
 
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -1385,7 +1384,7 @@ def viewFinish():
     # data = data.set_index("Item Description", drop=True)
     print(data.at[len(data)-1, 'Item Description'])
 
-    file_path = str(current_month) + str(current_year) + ".xlsx"
+    file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
     if not os.path.exists(file_path):
         workbook = openpyxl.Workbook()
         workbook.save(file_path)
@@ -1483,6 +1482,28 @@ def cnc_report():
     return render_template("cnc_report.html")
 
 
+@app.route("/downloadC", methods=['POST', 'GET'])
+def downloadC():
+    file_path = str(current_month) + str(current_year) + ".xlsx"
+    try:
+        return send_from_directory(directory='static', filename=file_path, as_attachment=True)
+    except Exception as e:
+        return str(e)
+
+
+@app.route("/downloadP", methods=['POST', 'GET'])
+def downloadP():
+    today = datetime.datetime.today()
+    first = today.replace(day=1)
+    prev_month = first - datetime.timedelta(days=1)
+    file_path = prev_month.strftime("%B%Y") + ".xlsx"
+    try:
+        return send_from_directory(directory='static', filename=file_path, as_attachment=True)
+    except Exception as e:
+        return str(e)
+
+
+
 @app.route("/index")
 def index():
     client = MongoClient()
@@ -1513,6 +1534,8 @@ def index():
 
     if (today.month != 12 and today.day == (datetime.date(today.year, today.month + 1, 1) - datetime.timedelta(days=1)).day) or (today.month == 12 and today.day == 31):
         # Today is the last day of the month
+
+        # Download the excel sheet
         db.prodItems.delete_many({})
 
 
