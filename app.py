@@ -1,28 +1,24 @@
-import urllib
 
-import xlsxwriter
 from flask import Flask, render_template, request, flash, send_file, redirect, url_for, session, send_from_directory
 import pandas as pd
 from flask_pymongo import PyMongo, pymongo
-from werkzeug.datastructures import MultiDict
-from responses import upsert
+
 from datetime import datetime, date
 import matplotlib.pyplot as plt
-import io
-import base64
+
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from io import BytesIO
 import os
 import openpyxl
-import time
+
 # import schedule
-from openpyxl import load_workbook
+# from openpyxl import load_workbook
 from pymongo import MongoClient
 import datetime
 # from webui import WebUI
-from flaskwebgui import FlaskUI
+# from flaskwebgui import FlaskUI
 
-from webui import WebUI
+# from webui import WebUI
 
 
 app = Flask(__name__)
