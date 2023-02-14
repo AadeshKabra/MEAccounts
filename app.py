@@ -1,23 +1,22 @@
-
 from flask import Flask, render_template, request, flash, send_file, redirect, url_for, session, send_from_directory
 import pandas as pd
 from flask_pymongo import PyMongo, pymongo
-
+from utils import *
 from datetime import datetime, date
-import matplotlib.pyplot as plt
-
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from io import BytesIO
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+# from io import BytesIO
 import os
-import openpyxl
-
+# import openpyxl
+# import plotly.express as px
 # import schedule
 # from openpyxl import load_workbook
 from pymongo import MongoClient
 import datetime
+# import io
+# import base64
 # from webui import WebUI
 # from flaskwebgui import FlaskUI
-
 # from webui import WebUI
 
 
@@ -218,12 +217,20 @@ def view():
     # data_total.style.set_properties(**{'background-color': 'white', 'color': 'blue', 'border-color': 'black'})
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Raw Material', index=False)
+        print("File created successfully")
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     data_total.to_excel(writer, 'Raw Material')
+
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         data_total.to_excel(writer, 'Raw Material')
 
 
@@ -242,11 +249,12 @@ def prod():
 # Displaying page of insertion of production item
 @app.route("/insertItem", methods=['POST', 'GET'])
 def insertItem():
-    raw = mongo_client.db.raw_material
-    raw_materials = []
-    for i in raw.find({}, {"name": 1, "_id": 0}):
-        if i['name']:
-            raw_materials.append(i["name"])
+    # raw = mongo_client.db.raw_material
+    # raw_materials = []
+    # for i in raw.find({}, {"name": 1, "_id": 0}):
+    #     if i['name']:
+    #         raw_materials.append(i["name"])
+    raw_materials = get_raw_material_names()
 
     return render_template("insertItem.html", raw_materials=raw_materials)
 
@@ -508,13 +516,20 @@ def viewProduction():
     table2 = data3.to_html()
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Production', index=False)
+        print("File created successfully")
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     result.to_excel(writer, 'Production')
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
-        result.to_excel(writer, 'Production')
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            result.to_excel(writer, 'Production')
         # data3.to_excel(writer, 'Production', startrow=len(result)+1, index=False)
 
 
@@ -540,19 +555,20 @@ def addE():
 def add_employee():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    employees = mongo_client.db.employees
+    # employees = mongo_client.db.employees
 
     name = request.form.get("eName")
     age = request.form.get("eAge")
     number = request.form.get("eNumber")
     rate = request.form.get("eRate")
-    details = {
-        "Name": name,
-        "Age": age,
-        "Contact": number,
-        "Rate": rate
-    }
-    employees.insert_one(details)
+    # details = {
+    #     "Name": name,
+    #     "Age": age,
+    #     "Contact": number,
+    #     "Rate": rate
+    # }
+    # employees.insert_one(details)
+    add_Employee(name, age, number, rate)
     global employee_names
     employee_names.append(name)
     return render_template("Employees/employees.html")
@@ -563,12 +579,13 @@ def add_employee():
 def markEmployee():
     app.config["MONGO_URI"] = "mongodb://127.0.0.1:27017/ME"
     # mongo = PyMongo(app)
-    employees = mongo_client.db.employees
-    names = list(employees.find({}, {"Name": 1, "_id": 0}))
-    list_names = []
-    for i in range(len(names)):
-        list_names.append(names[i]['Name'])
-    print(list_names)
+    # employees = mongo_client.db.employees
+    # names = list(employees.find({}, {"Name": 1, "_id": 0}))
+    # list_names = []
+    # for i in range(len(names)):
+    #     list_names.append(names[i]['Name'])
+    # print(list_names)
+    list_names = get_employee_names()
     return render_template("Employees/markEmployee.html", employees=list_names)
 
 
@@ -678,12 +695,20 @@ def viewAttendance():
     data["Net Amount"] = data["Days"] * data["Rate"]
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Attendance TRAUB', index=False)
+        print("File created successfully")
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     data.to_excel(writer, 'Attendance TRAUB')
+
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         data.to_excel(writer, 'Attendance TRAUB')
 
     table = data.to_html()
@@ -700,12 +725,13 @@ def dispatchProduction():
 
 @app.route("/dispatchInsert", methods=["GET"])
 def dispatchInsert():
-    production = mongo_client.db.production
-    names = list(production.find({}, {"Name": 1, "_id": 0}))
-    list_names = []
-    for i in names:
-        list_names.append(i["Name"])
-    print(list_names)
+    # production = mongo_client.db.production
+    # names = list(production.find({}, {"Name": 1, "_id": 0}))
+    # list_names = []
+    # for i in names:
+    #     list_names.append(i["Name"])
+    # print(list_names)
+    list_names = get_production_names()
     return render_template("Dispatch/insertDispatch.html", items=list_names)
 
 
@@ -767,12 +793,12 @@ def updateDispatch():
 
 @app.route("/updateSchedule", methods=['GET'])
 def schedule():
-    production = mongo_client.db.production
-    names = list(production.find({}, {"Name": 1, "_id": 0}))
-    list_names = []
-    for i in names:
-        list_names.append(i['Name'])
-
+    # production = mongo_client.db.production
+    # names = list(production.find({}, {"Name": 1, "_id": 0}))
+    # list_names = []
+    # for i in names:
+    #     list_names.append(i['Name'])
+    list_names = get_production_names()
     return render_template("Dispatch/schedule.html", items=list_names)
 
 
@@ -858,12 +884,19 @@ def view_report():
     data['Total Sale'] = data['PO Rate'] * data['Despatched']
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Dispatch', index=False)
+        print("File created successfully")
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     data.to_excel(writer, 'Dispatch')
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         data.to_excel(writer, 'Dispatch')
 
     table = data.to_html()
@@ -891,19 +924,20 @@ def aCreditor():
     name = request.form.get("name")
     date = request.form.get("date")
     amount = request.form.get("amount")
-    doc = {
-        date: float(amount)
-    }
-    document = {
-        "Name": name,
-        "30 Days": float(amount),
-        "60 Days": 0,
-        "90 Days": 0,
-        "90 Onwards": 0,
-        "Production": doc
-    }
-    creditors = mongo_client.db.creditors
-    creditors.insert_one(document)
+    # doc = {
+    #     date: float(amount)
+    # }
+    # document = {
+    #     "Name": name,
+    #     "30 Days": float(amount),
+    #     "60 Days": 0,
+    #     "90 Days": 0,
+    #     "90 Onwards": 0,
+    #     "Production": doc
+    # }
+    # creditors = mongo_client.db.creditors
+    # creditors.insert_one(document)
+    add_creditor(name, date, amount)
     return render_template("Creditors/creditors.html")
 
 
@@ -985,42 +1019,43 @@ def rDue():
     creditors = mongo_client.db.creditors
     document = creditors.find_one({"Name": name})
     print(document)
-    if document["90 Onwards"] > 0:
-        initial = document["90 Onwards"]
-        count = float(initial) - float(amount)
-        if count<0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        creditors.update_one({"Name": name}, {"$set": {"90 Onwards": count}})
-    if document["90 Days"] > 0 and float(amount) > 0:
-        initial = document["90 Days"]
-        count = float(initial) - float(amount)
-        if count < 0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        creditors.update_one({"Name": name}, {"$set": {"90 Days": count}})
-    if document["60 Days"] > 0 and float(amount) > 0:
-        initial = document["60 Days"]
-        count = float(initial) - float(amount)
-        if count < 0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        creditors.update_one({"Name": name}, {"$set": {"60 Days": count}})
-    if document["30 Days"] > 0 and float(amount) > 0:
-        initial = document["30 Days"]
-        count = float(initial) - float(amount)
-        if count < 0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        creditors.update_one({"Name": name}, {"$set": {"30 Days": count}})
+    release_due(document, name, amount)
+    # if document["90 Onwards"] > 0:
+    #     initial = document["90 Onwards"]
+    #     count = float(initial) - float(amount)
+    #     if count<0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     creditors.update_one({"Name": name}, {"$set": {"90 Onwards": count}})
+    # if document["90 Days"] > 0 and float(amount) > 0:
+    #     initial = document["90 Days"]
+    #     count = float(initial) - float(amount)
+    #     if count < 0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     creditors.update_one({"Name": name}, {"$set": {"90 Days": count}})
+    # if document["60 Days"] > 0 and float(amount) > 0:
+    #     initial = document["60 Days"]
+    #     count = float(initial) - float(amount)
+    #     if count < 0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     creditors.update_one({"Name": name}, {"$set": {"60 Days": count}})
+    # if document["30 Days"] > 0 and float(amount) > 0:
+    #     initial = document["30 Days"]
+    #     count = float(initial) - float(amount)
+    #     if count < 0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     creditors.update_one({"Name": name}, {"$set": {"30 Days": count}})
     return render_template("Creditors/creditors.html")
 
 
@@ -1061,12 +1096,19 @@ def viewCreditors():
     data['Total'] = data.sum(axis=1)
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Creditors', index=False)
+        print("File created successfully")
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     data.to_excel(writer, 'Creditors')
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         data.to_excel(writer, 'Creditors')
 
     table = data.to_html()
@@ -1094,19 +1136,19 @@ def aDebitor():
     name = request.form.get("name")
     date = request.form.get("date")
     amount = request.form.get("amount")
-    doc = {
-        date: amount
-    }
-    document = {
-        "Name": name,
-        "30 Days": float(amount),
-        "60 Days": 0,
-        "90 Days": 0,
-        "90 Onwards": 0,
-        "Dates": doc
-    }
-    debitors = mongo_client.db.debitors
-    debitors.insert_one(document)
+    # doc = {
+    #     date: amount
+    # }
+    # document = {
+    #     "Name": name,
+    #     "30 Days": float(amount),
+    #     "60 Days": 0,
+    #     "90 Days": 0,
+    #     "90 Onwards": 0,
+    #     "Dates": doc
+    # }
+    # debitors = mongo_client.db.debitors
+    # debitors.insert_one(document)
     return render_template("Debitors/debitors.html")
 
 
@@ -1187,43 +1229,43 @@ def rOutstanding():
     debitors = mongo_client.db.debitors
     document = debitors.find_one({"Name": name})
     print(document)
-
-    if document["90 Onwards"] > 0:
-        initial = document["90 Onwards"]
-        count = float(initial) - float(amount)
-        if count<0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        debitors.update_one({"Name": name}, {"$set": {"90 Onwards": count}})
-    if document["90 Days"] > 0 and float(amount) > 0:
-        initial = document["90 Days"]
-        count = float(initial) - float(amount)
-        if count < 0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        debitors.update_one({"Name": name}, {"$set": {"90 Days": count}})
-    if document["60 Days"] > 0 and float(amount) > 0:
-        initial = document["60 Days"]
-        count = float(initial) - float(amount)
-        if count < 0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        debitors.update_one({"Name": name}, {"$set": {"60 Days": count}})
-    if document["30 Days"] > 0 and float(amount) > 0:
-        initial = document["30 Days"]
-        count = float(initial) - float(amount)
-        if count < 0:
-            amount = abs(count)
-            count = 0
-        else:
-            amount = 0
-        debitors.update_one({"Name": name}, {"$set": {"30 Days": count}})
+    release_outstanding(document, name, amount)
+    # if document["90 Onwards"] > 0:
+    #     initial = document["90 Onwards"]
+    #     count = float(initial) - float(amount)
+    #     if count<0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     debitors.update_one({"Name": name}, {"$set": {"90 Onwards": count}})
+    # if document["90 Days"] > 0 and float(amount) > 0:
+    #     initial = document["90 Days"]
+    #     count = float(initial) - float(amount)
+    #     if count < 0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     debitors.update_one({"Name": name}, {"$set": {"90 Days": count}})
+    # if document["60 Days"] > 0 and float(amount) > 0:
+    #     initial = document["60 Days"]
+    #     count = float(initial) - float(amount)
+    #     if count < 0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     debitors.update_one({"Name": name}, {"$set": {"60 Days": count}})
+    # if document["30 Days"] > 0 and float(amount) > 0:
+    #     initial = document["30 Days"]
+    #     count = float(initial) - float(amount)
+    #     if count < 0:
+    #         amount = abs(count)
+    #         count = 0
+    #     else:
+    #         amount = 0
+    #     debitors.update_one({"Name": name}, {"$set": {"30 Days": count}})
     return render_template("Debitors/debitors.html")
 
 
@@ -1262,12 +1304,19 @@ def viewDebitors():
     data['Total'] = data.sum(axis=1)
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Debitors', index=False)
+        print("File created successfully")
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     data.to_excel(writer, 'Debitors')
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         data.to_excel(writer, 'Debitors')
 
     table = data.to_html()
@@ -1381,12 +1430,19 @@ def viewFinish():
     print(data.at[len(data)-1, 'Item Description'])
 
     file_path = "static/" + str(current_month) + str(current_year) + ".xlsx"
+    # if not os.path.exists(file_path):
+    #     workbook = openpyxl.Workbook()
+    #     workbook.save(file_path)
+    #     print("File Created successfully")
     if not os.path.exists(file_path):
-        workbook = openpyxl.Workbook()
-        workbook.save(file_path)
-        print("File Created successfully")
+        df = pd.DataFrame()
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Finish', index=False)
+        print("File created successfully")
 
-    with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    # with pd.ExcelWriter(file_path, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+    #     data.to_excel(writer, 'Finish')
+    with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         data.to_excel(writer, 'Finish')
 
     table = data.to_html()
@@ -1394,88 +1450,101 @@ def viewFinish():
     return render_template("Finish/viewFinish.html", table=table)
 
 
-@app.route("/analysis", methods=['GET'])
-def analysis():
-    return render_template("Analysis/analysis.html")
-
-
 # Analysis Graphs
 
-@app.route("/production_graph")
-def production_graph():
-    production = mongo_client.db.production
-    documents = list(production.find())
 
-    names = [doc['Name'] for doc in documents]
-    quantity = [doc['Kgs'] for doc in documents]
-    print(names)
-    print(quantity)
+# @app.route("/analysis", methods=['GET'])
+# def analysis():
+#     print("In analysis")
+#     return render_template("Analysis/analysis.html")
+#
+#
+# @app.route("/itemProduction")
+# def itemProduction():
+#     production = mongo_client.db.production
+#     items = mongo_client.db.prodItems
+#
+#     list_names = []
+#     for i in items.find({}, {"Name": 1, "_id": 0}):
+#         list_names.append(i['Name'])
+#     print(list_names)
+#
+#     quantity = []
+#     for name in list_names:
+#         document = production.find_one({"Name": name})
+#         dic = document["Production"]
+#         sum = 0
+#         for i in dic:
+#             sum += int(dic[i])
+#             # print(name, i, sum)
+#         quantity.append(sum)
+#     print(quantity)
+#
+#     fig, ax = plt.subplots()
+#     ax.bar(list_names, quantity)
+#
+#     buf = io.BytesIO()
+#     plt.savefig(buf, format='png')
+#     buf.seek(0)
+#     image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+#     return '<img src="data:image/png;base64,{}"/>'.format(image_base64)
+#
+#
+# @app.route("/dispatch_graph")
+# def dispatch_graph():
+#     dispatch = mongo_client.db.dispatch
+#     items = mongo_client.db.prodItems
+#
+#     list_names = []
+#     documents = items.find({}, {"Name": 1, "_id": 0})
+#     for i in documents:
+#         list_names.append(i['Name'])
+#     print(list_names)
+#
+#     list_quantity = []
+#     for i in list_names:
+#         document = dispatch.find_one({"Name": i})
+#         dis_dic = document['Dispatch']
+#         total = 0
+#         for j in dis_dic:
+#             total += float(dis_dic[j])
+#         list_quantity.append(total)
+#     print(list_quantity)
+#
+#
+#
+#     fig, ax = plt.subplots()
+#     plt.bar(list_names, list_quantity, color='red')
+#     plt.xlabel("Names")
+#     plt.ylabel("Quantity in Kgs")
+#     plt.title("Dispatch")
+#     canvas = FigureCanvas(fig)
+#     img = BytesIO()
+#     fig.savefig(img)
+#     img.seek(0)
+#     return send_file(img, mimetype='image/png')
 
-    fig, ax = plt.subplots()
-    plt.bar(names, quantity, color='blue')
-    plt.xlabel("Names")
-    plt.ylabel("Quantity in Kgs")
-    plt.title("Production")
-    canvas = FigureCanvas(fig)
-    img = BytesIO()
-    fig.savefig(img)
-    img.seek(0)
-    return send_file(img, mimetype='image/png')
 
-
-@app.route("/dispatch_graph")
-def dispatch_graph():
-    dispatch = mongo_client.db.dispatch
-    items = mongo_client.db.prodItems
-
-    list_names = []
-    documents = items.find({}, {"Name": 1, "_id": 0})
-    for i in documents:
-        list_names.append(i['Name'])
-    print(list_names)
-
-    list_quantity = []
-    for i in list_names:
-        document = dispatch.find_one({"Name": i})
-        dis_dic = document['Dispatch']
-        total = 0
-        for j in dis_dic:
-            total += float(dis_dic[j])
-        list_quantity.append(total)
-    print(list_quantity)
-
-    fig, ax = plt.subplots()
-    plt.bar(list_names, list_quantity, color='red')
-    plt.xlabel("Names")
-    plt.ylabel("Quantity in Kgs")
-    plt.title("Dispatch")
-    canvas = FigureCanvas(fig)
-    img = BytesIO()
-    fig.savefig(img)
-    img.seek(0)
-    return send_file(img, mimetype='image/png')
-
-
-@app.route("/cnc_report", methods=['GET'])
-def cnc_report():
-    items = mongo_client.db.prodItems
-    production = mongo_client.db.production
-
-    list_names = []
-    list_open = []
-    for i in items.find({}, {"Name": 1, "_id": 0, "Opening": 1}):
-        list_names.append(i['Name'])
-        list_open.append(i['Opening'])
-    print(list_names)
-    print(list_open)
-
-    list_received = []
-    for i in list_names:
-        dic = production.find_one({"Name": i})
-        print(dic)
-
-
-    return render_template("cnc_report.html")
+# @app.route("/cnc_report", methods=['GET'])
+# def cnc_report():
+#     items = mongo_client.db.prodItems
+#     production = mongo_client.db.production
+#
+#     list_names = []
+#     list_open = []
+#     for i in items.find({}, {"Name": 1, "_id": 0, "Opening": 1}):
+#         list_names.append(i['Name'])
+#         list_open.append(i['Opening'])
+#     print(list_names)
+#     print(list_open)
+#
+#     list_received = []
+#     for i in list_names:
+#         dic = production.find_one({"Name": i})
+#         print(dic)
+#
+#
+#     return render_template("cnc_report.html")
 
 
 @app.route("/downloadC", methods=['POST', 'GET'])
@@ -1595,19 +1664,7 @@ def dashboard():
 def logout():
     session.pop("username", None)
     return redirect("/")
-#
 
-
-# def ui(location): #Initiate PyQT5 app
-#     qt_app = QApplication(sys.argv)
-#     web = QWebEngineView()
-#     web.setWindowTitle("Window Name") #Rename to change your window name.
-#     # ^ This cannot change between pages
-#     web.resize(900, 800) # Set a size
-#     web.setZoomFactor(1.5) # Enlarge your content to fit screen
-#     web.load(QUrl(location)) #Load Home page at startup
-#     web.show() #Show the window
-#     sys.exit(qt_app.exec_())
 
 
 if __name__ == '__main__':
