@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, send_file
-import pandas as pd
+# import pandas as pd
 from utils import *
 from datetime import datetime
-import os
+# import os
 from pymongo import MongoClient
 import datetime
 from gridfs import GridFS
 import io
+import re
+
 
 # 101
 
@@ -101,6 +103,8 @@ def view():
     data_total = view_raw_material_sheet()
 
     table = data_total.to_html()
+    table = table.replace('</table>', '<style>table tr:last-child {font-weight: bold;}</style></table>')
+    # table = table.replace('</tr>', '</tr style="font-weight:bold;">', 1)
     return render_template("view.html", table=table)
 
 
@@ -136,6 +140,7 @@ def newProd():
         list1.append(i["Name"])
     # return render_template("updateProd.html", items=items)
     return render_template("Dispatch/schedule.html", items=list1)
+
 
 # Displaying the page for updation of production item
 @app.route("/updateProd", methods=['POST', 'GET'])
@@ -239,6 +244,8 @@ def viewProduction():
 
     table1 = result1.to_html()
     table2 = result2.to_html()
+
+    table1 = table1.replace('</table>', '<style>table tr td:last-child {font-weight: bold;}</style></table>')
 
     return render_template("prodView.html", report1=table1, report2=table2)
 
@@ -441,11 +448,14 @@ def insertSchedule():
     return render_template("updateProd.html", items=list_names)
 
 
+
+
 @app.route("/viewScheduleReport", methods=['post'])
 def view_report():
     data = view_dispatch_sheet()
 
     table = data.to_html()
+    table = table.replace('</table>', '<style>table tr td:last-child {font-weight: bold;}</style></table>')
 
     return render_template("Dispatch/viewReport.html", table=table)
 
@@ -559,8 +569,16 @@ def viewCreditors():
     data = view_creditors_sheet()
 
     table = data.to_html()
+    table = table.replace('</table>', '<style>table tr td:last-child {font-weight: bold;}</style></table>')
 
     return render_template("Creditors/viewCreditors.html", table=table)
+
+
+# @app.route("/creditorsAnalysis", methods=['POST'])
+# def creditorsAnalysis():
+#     df = view_creditors_sheet()
+#     labels = ["30 Days", "60 Days", "90 Days", "90 Onwards"]
+#
 
 
 # Debitors Section
@@ -671,6 +689,7 @@ def viewDebitors():
     data = view_debitors_sheet()
 
     table = data.to_html()
+    table = table.replace('</table>', '<style>table tr td:last-child {font-weight: bold;}</style></table>')
 
     return render_template("Debitors/viewDebitors.html", table=table)
 
@@ -710,6 +729,7 @@ def viewFinish():
     data = view_finish_sheet()
 
     table = data.to_html()
+    table = table.replace('</table>', '<style>table tr td:last-child {font-weight: bold;}</style></table>')
 
     return render_template("Finish/viewFinish.html", table=table)
 
@@ -771,6 +791,7 @@ def analysis():
     plot_div3 = dispatch_graph()
     plot_div4 = raw_dispatch_graph()
     plot_div5 = attendance_graph()
+
 
     return render_template("Analysis/analysis2.html", plot_div1=plot_div1, plot_div2=plot_div2, plot_div3=plot_pie1, plot_div4=plot_pie2, plot_div5=plot_pie3, plot_div6=plot_div3, plot_div7=plot_div4, plot_div8=plot_div5)
     # return render_template("Analysis/analysis.html")
@@ -845,16 +866,33 @@ def login_next():
 def register():
     if request.method == "POST":
         users = mongo_client.db.users
-        existing_user = users.find_one({"Username": request.form["username"]})
+        username = request.form["username"]
+        user_reg = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 
-        if existing_user is None:
-            users.insert_one({
-                "Username": request.form["username"],
-                "Password": request.form["password"]
-            })
-            session["username"] = request.form["username"]
-            # mongo.db.createCollection(request.form["username"])
-            return redirect("/")
+        password = request.form["password"]
+        pass_upper = r'[A-Z]'
+        pass_lower = r'[a-z]'
+        pass_symbol = r'[\W_]'
+
+        existing_user = users.find_one({"Username": username})
+        if not re.match(user_reg, username):
+            message = "Username must be an email!"
+            return render_template("register.html", message=message)
+
+        if len(password) < 5 or not re.search(pass_upper, password) or not re.search(pass_symbol, password) or not re.search(pass_lower, password):
+            message = "Password must be of at least 5 characters containing a uppercase, lowercase letter and symbol"
+            return render_template("register.html", message=message)
+
+        else:
+            if existing_user is None:
+                users.insert_one({
+                    "Username": request.form["username"],
+                    "Password": request.form["password"]
+                })
+                session["username"] = request.form["username"]
+                # mongo.db.createCollection(request.form["username"])
+                return redirect("/")
+
         return "The username already exists"
 
     return render_template("register.html")
@@ -867,11 +905,68 @@ def dashboard():
     return render_template('index.html', username=session['username'])
 
 
-@app.route("/logout")
+@app.route("/logout", methods=['POST'])
 def logout():
     session.pop("username", None)
     return redirect("/")
 
+
+@app.route("/forgot_password", methods=['POST'])
+def forgot_password():
+    return render_template("forgot.html")
+
+
+@app.route("/forgot", methods=['POST', 'GET'])
+def forgot():
+    print("Inside")
+    username = request.form["username"]
+    print(username)
+    users = mongo_client.db.users
+    existing_user = users.find_one({"Username": username})
+    if not existing_user:
+        message = "Your are not registered. Please Register"
+        return render_template("register.html", message=message)
+
+    token = generate_token()
+    print(token)
+    users.update_one({"_id": existing_user["_id"]}, {'$set': {'reset_token': token}})
+
+    message = "Password reset required. Token: " + str(token)
+    send_email(existing_user["Username"], message)
+
+    login_message = "Link for password reset sent on email."
+    return render_template('resetPassword.html', message=login_message)
+
+
+@app.route("/newPassword", methods=['POSt'])
+def newPassword():
+    token = request.form['token']
+    username = request.form['username']
+    print(username, token)
+    return render_template("setPassword.html", username=username)
+
+
+@app.route("/setPassword", methods=['POST'])
+def setPassword():
+    password1 = request.form['password1']
+    password2 = request.form['password2']
+    username = request.form['username']
+    print(username, password1, password2)
+    users = mongo_client.db.users
+
+    if password1 == password2:
+        pass_upper = r'[A-Z]'
+        pass_lower = r'[a-z]'
+        pass_symbol = r'[\W_]'
+
+        if len(password1) > 5 and re.search(pass_upper, password1) and re.search(pass_symbol, password1) and re.search(pass_lower, password1):
+            users.update_one({"Username": username}, {"$set": {"Password": password1}})
+        else:
+            message = "Password must be of at least 5 characters containing a uppercase, lowercase letter and symbol"
+            return render_template("setPassword.html", message=message)
+
+    message = "Password changed successfully."
+    return render_template("login.html", message=message)
 
 
 if __name__ == '__main__':

@@ -10,12 +10,18 @@
     width: 100vh;
 
     /* Background */
-    background-image: url("pexels-ovan-62693.jpg");
+    background-image: url("bg2.jpg");
     background-size: cover;
     background-position: center;
     height: 100%;
     width: 100%;
 }
+
+h1{
+    font-family: 'Bakbak One', cursive;
+    color: #222c42;
+}
+
 
 .button-40 {
     background-color: #222c42;

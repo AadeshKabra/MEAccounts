@@ -3,6 +3,12 @@ import pandas as pd
 import datetime
 import plotly.graph_objs as go
 import plotly
+import random
+import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 
 mongo_client = pymongo.MongoClient("mongodb+srv://sagar:sagar@cluster0.gwnjuq6.mongodb.net/?retryWrites=true&w=majority", maxPoolSize=50, connect=False)
 db = pymongo.database.Database(mongo_client, 'ME')
@@ -161,6 +167,14 @@ def release_outstanding(document, name, amount):
         debitors.update_one({"Name": name}, {"$set": {"30 Days": count}})
 
 
+def format_last_row(data):
+    if isinstance(data, pd.Series):
+        last_row = data.to_frame().T
+    else:
+        last_row = data.tail(1)
+    return ['font-weight: bold' if i == len(last_row.columns) - 1 else '' for i in range(len(last_row.columns))]
+
+
 def view_raw_material_sheet():
     raw = mongo_client.db.raw_material
     items = mongo_client.db.prodItems
@@ -230,21 +244,22 @@ def view_raw_material_sheet():
         issued_value.append(float(list_issued[i]) * float(list_rate[i]))
 
     data = pd.DataFrame(list(
-        zip(list_names, list_units, list_opening, list_received, list_issued, bal, list_rate, opening_value,
-            received_value, issued_value)),
-                        columns=['Description', 'UNITS', 'OPENING', 'RECEIVED', 'ISSUED', 'BALANCE', 'RATE',
-                                 'OPENING by Value', 'RECEIVED by Value', 'ISSUED by Value'])
+        zip(list_names, list_units, list_opening, list_received, list_issued, bal, list_rate, opening_value, received_value, issued_value)), columns=['DESCRIPTION', 'UNIT', 'STOCKED QUANTITY', 'RECEIVED QUANTITY', 'USED QUANTITY', 'BALANCE QUANTITY', 'RATE (in Rs)','STOCKED PRICE', 'RECEIVED PRICE', 'USED PRICE'])
 
-    data['BALANCE by Value'] = data['BALANCE'] * data['RATE']
+    data['BALANCE PRICE'] = data['BALANCE QUANTITY'] * data['RATE (in Rs)']
 
     data_total = data.append(data.sum(axis=0), ignore_index=True)
 
     # Set the name of the last row to "Total"
-    data_total.loc[data_total.index[-1], 'Description'] = "Total"
-    data_total.loc[data_total.index[-1], 'UNITS'] = ""
-    data_total.loc[data_total.index[-1], 'RATE'] = ""
-    data_total.style.set_properties(subset=['Description'], **{'font-weight': 'bold'})
+    data_total.loc[data_total.index[-1], 'DESCRIPTION'] = "Total"
+    data_total.loc[data_total.index[-1], 'UNIT'] = ""
+    data_total.loc[data_total.index[-1], 'RATE (in Rs)'] = ""
+    data_total.style.set_properties(subset=['DESCRIPTION'], **{'font-weight': 'bold'})
+    data_total.index = data_total.reset_index(drop=True).index + 1
+
+
     return data_total
+
 
 def add_new_prod_item(name, weight, raw, rate):
     prodItems = mongo_client.db.prodItems
@@ -330,7 +345,7 @@ def view_production_sheet():
         item_weight = items.find_one({"Name": item})
         weights.append(item_weight['Weight'])
 
-    data1 = pd.DataFrame(list(zip(list_items, weights, raw_material_data, kgs)), columns=['Items', 'Weight', 'Raw Material used', 'Quantity (Kgs)'])
+    data1 = pd.DataFrame(list(zip(list_items, weights, raw_material_data, kgs)), columns=['ITEMS', 'WEIGHT', 'RAW MATERIAL', 'QUANTITY (Kgs)'])
 
     data2 = pd.DataFrame(dic_production)
     data2 = data2.transpose()
@@ -339,7 +354,7 @@ def view_production_sheet():
     data2 = data2.reset_index()
 
     data2 = data2.drop(['index'], axis=1)
-    data2['Total'] = data2.sum(axis=1)
+    data2['TOTAL'] = data2.sum(axis=1)
 
     result = pd.concat([data1, data2], axis=1, join='outer')
     list_total = []
@@ -349,14 +364,17 @@ def view_production_sheet():
             total += float(dic_production[i][j])
         list_total.append(total)
     print(list_total)
-    result['Total'] = list_total
+    result['TOTAL'] = list_total
 
     # Dataframe 2
     raw = []
     for i in groups:
         raw.append(i)
     print(raw)
-    data3 = pd.DataFrame(list(zip(raw, quantity_data)), columns=['Raw Material', 'Quantity of material used'])
+    data3 = pd.DataFrame(list(zip(raw, quantity_data)), columns=['RAW MATERIAL', 'USED QUANTITY (Kgs)'])
+
+    result.index = result.reset_index(drop=True).index + 1
+    data3.index = data3.reset_index(drop=True).index + 1
 
     return result, data3
 
@@ -371,7 +389,7 @@ def view_attendance_sheet():
         employee_names.append(i['Name'])
     attend = list(attendance.find({}, {"Attendance": 1, "_id": 0}))
     print(attend)
-    data1 = pd.DataFrame(employee_names, columns=['Name of Employee'])
+    data1 = pd.DataFrame(employee_names, columns=['EMPLOYEE NAME'])
     data2 = pd.DataFrame()
     for i in range(len(employee_names)):
         temp_data = pd.DataFrame([attend[i]["Attendance"]])
@@ -379,7 +397,7 @@ def view_attendance_sheet():
     print(data2)
 
     data = pd.concat([data1, data2], axis=1)
-    data['Total'] = data.sum(axis=1)
+    data['TOTAL'] = data.sum(axis=1)
 
     rate = list(employees.find({}, {"Rate": 1, "_id": 0}))
     print(rate)
@@ -387,12 +405,14 @@ def view_attendance_sheet():
     for i in rate:
         list_rate.append(float(i["Rate"]))
 
-    temp_data = pd.DataFrame(list_rate, columns=["Rate"])
+    temp_data = pd.DataFrame(list_rate, columns=["EARN/DAY"])
     data = pd.concat([data, temp_data], axis=1)
-    data['Days'] = data['Total'] / 8
-    data["Net Amount"] = data["Days"] * data["Rate"]
+    data['DAYS'] = data['TOTAL'] / 8
+    data["NET EARN"] = round(data["DAYS"] * data["EARN/DAY"], 2)
 
     return data
+
+
 
 
 def view_dispatch_sheet():
@@ -428,11 +448,11 @@ def view_dispatch_sheet():
     days = len(dispatch_list[0])
     # create the dataframe
     df = pd.DataFrame.from_dict(d, orient='index')
-    df.index.name = 'Name'
-    df.columns = ['Schedule'] + list(range(1, days))
+    df.index.name = 'NAME'
+    df.columns = ['SCHEDULE'] + list(range(1, days))
 
     # add the values from l2
-    df['Schedule'] = schedule_list
+    df['SCHEDULE'] = schedule_list
     total = []
     for i in range(len(dispatch_list)):
         sum1 = 0
@@ -440,7 +460,8 @@ def view_dispatch_sheet():
             sum1 += dispatch_list[i][j]
         total.append(sum1)
 
-    df["Total"] = total
+    df["TOTAL"] = total
+    # df = df.style.format({'Total': format_bold})
 
     return df
 
@@ -470,10 +491,10 @@ def view_creditors_sheet():
     for i in creditors.find({}, {"90 Onwards": 1, "_id": 0}):
         list_90_onwards.append(i['90 Onwards'])
 
-    data = pd.DataFrame(list(zip(list_names, list_30, list_60, list_90, list_90_onwards)),
-                        columns=['Name', '30 Days', '60 Days', '90 Days', '90 Onwards'])
+    data = pd.DataFrame(list(zip(list_names, list_30, list_60, list_90, list_90_onwards)),columns=['NAME', '30 Days', '60 Days', '90 Days', '90 Onwards'])
 
-    data['Total'] = data.sum(axis=1)
+    data['TOTAL'] = data.sum(axis=1)
+    data = data.set_index(data.index.map(lambda x: x + 1))
     return data
 
 
@@ -500,11 +521,10 @@ def view_debitors_sheet():
     for i in debitors.find({}, {"90 Onwards": 1, "_id": 0}):
         list_90_onwards.append(i['90 Onwards'])
 
-    data = pd.DataFrame(list(zip(list_names, list_30, list_60, list_90, list_90_onwards)),
-                        columns=['Name', '30 Days', '60 Days', '90 Days', '90 Onwards'])
+    data = pd.DataFrame(list(zip(list_names, list_30, list_60, list_90, list_90_onwards)), columns=['NAME', '30 Days', '60 Days', '90 Days', '90 Onwards'])
 
-    data['Total'] = data.sum(axis=1)
-
+    data['TOTAL'] = data.sum(axis=1)
+    data = data.set_index(data.index.map(lambda x: x + 1))
     return data
 
 
@@ -561,36 +581,35 @@ def view_finish_sheet():
         else:
             rates.append(0)
 
-    data = pd.DataFrame(list(zip(list_names, list_opening, list_production, list_dispatch, rates)),
-                        columns=['Item Description', 'Opening', 'Production', 'Dispatched', 'Rate'])
+    data = pd.DataFrame(list(zip(list_names, list_opening, list_production, list_dispatch, rates)),columns=['ITEM', 'STOCKED', 'PRODUCTION', 'DISPATCHED', 'RATE (in Rs)'])
 
-    data['Opening Value'] = data['Opening'] * data['Rate']
-    data['Production Value'] = data['Production'] * data['Rate']
-    data['Dispatched Value'] = data['Dispatched'] * data['Rate']
+    data['STOCKED PRICE'] = data['STOCKED'] * data['RATE (in Rs)']
+    data['PRODUCTION PRICE'] = data['PRODUCTION'] * data['RATE (in Rs)']
+    data['DISPATCHED PRICE'] = data['DISPATCHED'] * data['RATE (in Rs)']
 
     row_sum = data.sum(numeric_only=True)
 
     data = data.append(row_sum, ignore_index=True)
 
-    data.at[len(data) - 1, 'Item Description'] = 'Total'
-    data.at[len(data) - 1, 'Rate'] = 0
-
+    data.at[len(data) - 1, 'ITEM'] = 'TOTAL'
+    data.at[len(data) - 1, 'RATE (in Rs)'] = 0
+    data = data.set_index(data.index.map(lambda x: x + 1))
     return data
 
 
 def production_graph():
     df1, df2 = view_production_sheet()
 
-    total = df1['Total'].tolist()
-    items = df1['Items'].tolist()
+    total = df1['TOTAL'].tolist()
+    items = df1['ITEMS'].tolist()
 
     data = [go.Bar(x=items, y=total)]
     layout = go.Layout(title='Production of different items', xaxis=dict(title='Production Items'), yaxis=dict(title='Production Quantity'), width=600)
     fig = go.Figure(data=data, layout=layout)
     plot_div1 = plotly.offline.plot(fig, include_plotlyjs=False, output_type='div')
 
-    raw_material = df2['Raw Material']
-    quantity = df2['Quantity of material used']
+    raw_material = df2['RAW MATERIAL']
+    quantity = df2['USED QUANTITY (Kgs)']
     data = [go.Bar(x=raw_material, y=quantity)]
     layout = go.Layout(title='Raw Material Consumption', xaxis=dict(title='Raw Material'), yaxis=dict(title='Consumption'), width=600)
     fig = go.Figure(data=data, layout=layout)
@@ -609,32 +628,32 @@ def create_pie_chart(list1, list2, name):
 
 def production_pie():
     df1, df2 = view_production_sheet()
-    total = df1['Total'].tolist()
-    items = df1['Items'].tolist()
+    total = df1['TOTAL'].tolist()
+    items = df1['ITEMS'].tolist()
     plot_div = create_pie_chart(items, total, "Production Pie")
     return plot_div
 
 
 def creditors_pie():
     df = view_creditors_sheet()
-    names = df['Name'].tolist()
-    total = df['Total'].tolist()
+    names = df['NAME'].tolist()
+    total = df['TOTAL'].tolist()
     plot_div = create_pie_chart(names, total, "Creditors Pie")
     return plot_div
 
 
 def debitors_pie():
     df = view_debitors_sheet()
-    names = df['Name'].tolist()
-    total = df['Total'].tolist()
+    names = df['NAME'].tolist()
+    total = df['TOTAL'].tolist()
     plot_div = create_pie_chart(names, total, "Debitors Pie")
     return plot_div
 
 
 def dispatch_graph():
     df = view_finish_sheet()
-    names = df['Item Description'].tolist()[:-1]
-    dispatch = df['Dispatched'].tolist()[:-1]
+    names = df['ITEM'].tolist()[:-1]
+    dispatch = df['DISPATCHED'].tolist()[:-1]
     data = [go.Bar(x=names, y=dispatch)]
     layout = go.Layout(title='Dispatch', xaxis=dict(title='Produced Items'), yaxis=dict(title='Dispatched'), width=600)
     fig = go.Figure(data=data, layout=layout)
@@ -644,7 +663,7 @@ def dispatch_graph():
 
 def raw_dispatch_graph():
     df1 = view_raw_material_sheet()
-    raw_material_value = (df1['OPENING by Value'][:-1] + df1['RECEIVED by Value'][:-1]).tolist()
+    raw_material_value = (df1['STOCKED PRICE'][:-1] + df1['RECEIVED PRICE'][:-1]).tolist()
     print("Raw Material Value", raw_material_value)
     items = mongo_client.db.prodItems
     dispatch = mongo_client.db.dispatch
@@ -655,7 +674,7 @@ def raw_dispatch_graph():
         # print(record)
     print("Temporary list: ", temp)
 
-    raw_names = df1['Description'].tolist()[:-1]
+    raw_names = df1['DESCRIPTION'].tolist()[:-1]
     print("Raw Material: ", raw_names)
 
 
@@ -700,7 +719,7 @@ def raw_dispatch_graph():
 def attendance_graph():
     df = view_attendance_sheet()
     attendance = mongo_client.db.attendance
-    names = df['Name of Employee'].tolist()
+    names = df['EMPLOYEE NAME'].tolist()
     att_dic = {}
     for i in names:
         res = attendance.find_one({"Name": i})
@@ -718,3 +737,35 @@ def attendance_graph():
     plot_div = plotly.offline.plot(fig, include_plotlyjs=False, output_type='div')
     return plot_div
 
+
+# Generate a random token
+def generate_token(length=30):
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+
+
+
+def get_user_by_reset_token(token):
+    users = mongo_client.db.users
+    user = users.find_one({"reset_token": token})
+    return user
+
+
+def send_email(to, message):
+    sender_email = "aadeshkabra@gmail.com"
+    receiver_email = to
+    password = "inximuqzuxdotmks"
+    subject = "Password reset request"
+    message = message
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(message, 'plain'))
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(sender_email, password)
+    text = msg.as_string()
+    server.sendmail(sender_email, receiver_email, text)
+    server.quit()

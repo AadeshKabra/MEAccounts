@@ -6,17 +6,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="static\analysis.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bakbak+One&family=Carter+One&display=swap" rel="stylesheet">
+    <style>
+
+        h1{
+            font-family: 'Bakbak One', cursive;
+            /* color: #222c42; */
+            /* color: red; */
+            color: #30475E;
+        }
+        div{
+            margin-top: 2em;
+        }
+    </style>
 </head>
-<body>
+<body class="full-background">
     <h1>Analysis</h1>
     <div>
         {{ plot_div1 | safe }}
+    </div>
+    <div>
         {{ plot_div2 | safe }}
+    </div>
+    <div>
         {{ plot_div3 | safe }}
+    </div>
+    <div>
         {{ plot_div4 | safe }}
+    </div>
+    <div>
         {{ plot_div5 | safe }}
+    </div>
+    <div>
         {{ plot_div6 | safe }}
+    </div>
+    <div>
         {{ plot_div7 | safe }}
+    </div>
+    <div>
         {{ plot_div8 | safe }}
     </div>
 </body>

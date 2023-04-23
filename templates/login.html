@@ -14,6 +14,12 @@
 
 <body class="full-background">
     <h1>Login</h1>
+    {% if message %}
+    <div class="alert alert-danger" role="alert" id="message">
+        {{ message }}
+    </div>
+    {% endif %}
+
     <form action="/login" method="post">
         <label for="username" style="display: inline-block;">Username:</label>
         <input type="text" id="username" name="username">
@@ -22,7 +28,12 @@
         <input type="password" id="password" name="password">
         <br>
         <button type="submit" class="button-40" role="button">Login</button>
+        <!-- <a href="">Forgot Password?</a> -->
         <!-- <input type="submit" value="Login"> -->
+    </form>
+
+    <form action="/forgot_password" method="post">
+        <button type="submmit" class="button-40" role="button">Forgot Password</a>
     </form>
 
     <form action="/register" method="get">
